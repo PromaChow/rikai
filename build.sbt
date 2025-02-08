@@ -18,13 +18,19 @@ sparkVersion := {
 sparkVerStr := s"spark${sparkVersion.value.replace(".", "")}"
 
 def versionFmt(out: sbtdynver.GitDescribeOutput): String = {
-  val parts = out.ref.dropPrefix.split('.').toList
-  val major :: minor :: patch :: rest = parts
-  val nextPatchInt = patch.toInt + 1
-  if (out.isSnapshot)
-    s"$major.$minor.$nextPatchInt-SNAPSHOT"
-  else
-    out.ref.dropPrefix
+  val ref = out.ref.dropPrefix
+  val parts = ref.split('.').toList
+  parts match {
+    case major :: minor :: patch :: rest =>
+      val nextPatchInt = patch.toInt + 1
+      if (out.isSnapshot)
+        s"$major.$minor.$nextPatchInt-SNAPSHOT"
+      else
+        ref
+    case _ =>
+      // If the version string doesn't follow the expected format, return it as-is (or you could define another fallback)
+      ref
+  }
 }
 
 def fallbackVersion(d: java.util.Date): String =
